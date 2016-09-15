@@ -1,0 +1,57 @@
+y<-galton$child
+x<-galton$parent
+beta1<-cor(y,x)*sd(y)/sd(x)
+beta0<-mean(y)-beta1*mean(x)
+rbind(c(beta0,beta1), coef(lm(y~x)))
+#intercepto=23.94 y x= 0.64 en ambos casos
+#lm() es la función de regresión lineal
+#la función rbind() concatena
+
+#Regresión a través del origen
+yc<-y-mean(y)  #y centrada
+xc<-x-mean(x)  #x centrada
+beta1<-sum(yc*xc)/sum(xc^2)
+c(beta1,coef(lm(y~x))[2])
+#el beta obtenido es el mismo 
+
+#Regresión con variables normalizadas
+#normalización de las variables
+yn<-(y- mean(y))/sd(y)
+xn<-(x-mean(x))/sd(x)
+c(cor(y,x), cor(yn,xn), coef(lm(yn~xn))[2])
+#la última línea demuestra que la correlación entre las variables
+#   no cambia si éstas se normalizan o no, por lo que puede ser usada
+#   como medida de predicción
+
+#gráfica de los datos con línea de regresión
+library(ggplot2)
+library(dplyr)
+g<-ggplot(filter(freqData, freq>0), aes(x=parent, y=child))
+g<-g+ scale_size(range=c(2,20), guide="none")
+g<-g +geom_point(colour="grey50", aes(size=freq+20, show_guide= FALSE))
+g<-g +geom_point(aes(colour=freq, size=freq))
+g<-g+ scale_colour_gradient(low="lightblue", high="white")
+g<-g +geom_smooth(method="lm", formula= y~x)
+g
+
+#REGRESSION TO THE MEAN#
+library(UsingR)
+data(father.son)
+y<-(father.son$sheight - mean(father.son$sheight))/sd(father.son$sheight)
+x<-(father.son$fheight -mean(father.son$fheight))/sd(father.son$sheight)
+rho<-cor(x,y)
+g= ggplot(data.frame(x=x, y=y), aes(x=x, y=y))
+g= g + geom_point(size=6, colour= "black", alpha=0.2)
+g= g + geom_point(size=4, colour="salmon", alpha=0.2)
+#definimos los límites de los ejes
+g= g+ xlim(-4,4) + ylim(-4,4)
+#linea identidad
+g= g+ geom_abline(intercept=0, slope=1)
+#marcamos los ejes
+g= g+ geom_vline(xintercept = 0)
+g= g+ geom_hline(yintercept=0)
+#recta de regresión y~x
+g= g+ geom_abline(intercept = 0, slope=rho, size=2, colour="blue")
+#recta de regresión x~y
+g= g+ geom_abline(intercept=0, slope=1/rho, size=2, colour="green")
+g
